@@ -20,9 +20,13 @@ public class PlayerController : MonoBehaviour
 
 
     //상태 변수
+    private bool isWalk = false;
     private bool isRun = false;
-    private bool isGround = true;
     private bool isCrouch = false;
+    private bool isGround = true;
+
+    //움직임 체크 변수
+    private Vector3 lastPos;
 
     //앉았을 때 얼마나 앉았을 지 결정하는 변수
     [SerializeField]
@@ -46,20 +50,22 @@ public class PlayerController : MonoBehaviour
     private GunController theGunController;
     private CapsuleCollider capsuleCollider;
     private Rigidbody myRigid;
+    private CrossHair theCrossHair;
     
 
-    // Start is called before the first frame update
+    
     void Start()
     {
         capsuleCollider = GetComponent<CapsuleCollider>();
         myRigid = GetComponent<Rigidbody>();
         theGunController = FindObjectOfType<GunController>();
+        theCrossHair = FindObjectOfType<CrossHair>();
+
         applySpeed = walkSpeed;
         originPoxY = theCamera.transform.localPosition.y;
         applyCrouchPoxY = originPoxY;
     }
 
-    // Update is called once per frame
     void Update()
     {
         IsGround();
@@ -70,6 +76,12 @@ public class PlayerController : MonoBehaviour
         CameraRotation();
         CharacterRotation();
     }
+
+    private void FixedUpdate()
+    {
+        MoveCheck();
+    }
+
 
     private void tryCrouch()
     {
@@ -82,8 +94,9 @@ public class PlayerController : MonoBehaviour
     private void Crouch()
     {
         isCrouch = !isCrouch;
+        theCrossHair.CrouchAnimation(isCrouch);
 
-        if(isCrouch)
+        if (isCrouch)
         {
             applySpeed = crouchSpeed;
             applyCrouchPoxY = crouchPoxY;
@@ -121,7 +134,8 @@ public class PlayerController : MonoBehaviour
 
     private void IsGround()
     {
-        isGround = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.bounds.extents.y + 0.1f);
+        isGround = Physics.Raycast(transform.position, Vector3.down, capsuleCollider.bounds.extents.y + 0.2f);
+        theCrossHair.JumpingAnimation(!isGround);
     }
 
     private void tryJump()
@@ -156,6 +170,8 @@ public class PlayerController : MonoBehaviour
         if (isCrouch)
             Crouch();
         isRun = true;
+
+        theCrossHair.RunningAnimation(isRun);
         theGunController.CancelFineSight();
         applySpeed = runSpeed;
     }
@@ -163,6 +179,7 @@ public class PlayerController : MonoBehaviour
     private void RunningCancel()
     {
         isRun = false;
+        theCrossHair.RunningAnimation(isRun);
         applySpeed = walkSpeed;
     }
 
@@ -176,6 +193,23 @@ public class PlayerController : MonoBehaviour
         Vector3 velocity = (_moveHorizontal + _moveVertical).normalized * applySpeed;
 
         myRigid.MovePosition(transform.position + velocity * Time.deltaTime);
+    }
+
+    private void MoveCheck()
+    {
+        if(!isRun && !isCrouch && isGround)
+        {
+            if (Vector3.Distance(lastPos, transform.position) >= 0.01f)
+            {
+                isWalk = true;
+            }
+            else
+                isWalk = false;
+
+            theCrossHair.WalkingAnimation(isWalk);
+
+            lastPos = transform.position;
+        }
     }
 
     private void CameraRotation()

@@ -2,54 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HandController : MonoBehaviour
+public class HandController : CloseWeaponController
 {
-    [SerializeField]
-    private Hand currentHand; //Hand형 타입의 무언가
+    public static bool isActivate = false;
 
-    //공격중인가
-    private bool isAttack = false;
-    private bool isSwing = false;
-
-    private RaycastHit hitInfo;
-
-    // Update is called once per frame
     void Update()
     {
-        TryAttack();
-    }
-
-    private void TryAttack()
-    {
-        if(Input.GetButton("Fire1"))
+        if (isActivate)
         {
-            if(!isAttack)
-            {
-                StartCoroutine("AttackCoroutine");
-            }
+            TryAttack();
         }
-    }
-    IEnumerator AttackCoroutine()
-    {
-        isAttack = true;
-        currentHand.anim.SetTrigger("Attack");
-        yield return new WaitForSeconds(currentHand.attackDelayA);
-        isSwing = true;
-        StartCoroutine("HitCoroutine");
-        yield return new WaitForSeconds(currentHand.attackDelayB);
-        isSwing = false;
-        yield return new WaitForSecondsRealtime(currentHand.attackDelay - currentHand.attackDelayA - currentHand.attackDelayB);
-
-
-        isAttack = false;
 
     }
 
-    IEnumerator HitCoroutine()
+    protected override IEnumerator HitCoroutine()
     {
-        while(isSwing)
+        while (isSwing)
         {
-            if(CheckObject())
+            if (CheckObject())
             {
                 isSwing = false;
                 Debug.Log(hitInfo.transform.name);
@@ -61,14 +31,11 @@ public class HandController : MonoBehaviour
             yield return null;
         }
     }
-    private bool CheckObject()
-    {
-        if(Physics.Raycast(transform.position, transform.forward, out hitInfo, currentHand.range))
-        {
-            return true;
-        }
 
-        return false;
+    public override void CloseWeaponChange(CloseWeapon _closeWeapon)
+    {
+        base.CloseWeaponChange(_closeWeapon);
+        isActivate = true;
     }
 
 }

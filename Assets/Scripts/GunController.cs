@@ -4,32 +4,50 @@ using UnityEngine;
 
 public class GunController : MonoBehaviour
 {
+    public static bool isActivate = true;
+
     [SerializeField]
     private Gun currentGun; //현제 장착된 총
 
     private float currentFireRate;//연사속도
 
+    private RaycastHit hitInfo;//hit한 raycast정보
+
     //상태 변수
     private bool isReload = false;
-    private bool isFineSightMode = false;
+    [HideInInspector]
+    public bool isFineSightMode = false;
 
-    
-    private Vector3 originPos = Vector3.zero; //정조준 이후 본래 위치로 이동하기 위한 벡터값
+    private Vector3 originPos; //정조준 이후 본래 위치로 이동하기 위한 벡터값
 
     //효과음 재생
     private AudioSource audioSource;
-    
+
+    //필요한 컴포넌트
+    [SerializeField]
+    private Camera theCam; //카메라
+    private CrossHair theCrossHair;
+    [SerializeField]
+    GameObject hitEffectPrefab; //피격 이펙트
+
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        originPos = Vector3.zero;
+        theCrossHair = FindObjectOfType<CrossHair>();
+        WeaponManager.curretnWeapon = currentGun.GetComponent<Transform>();
+        WeaponManager.currentWeaponAnim = currentGun.GetComponent<Animator>();
     }
 
     void Update()
     {
-        GunFireRateCalc();
-        TryFire();
-        TryReload();
-        TryFineSightMode();
+        if(isActivate)
+        {
+            GunFireRateCalc();
+            TryFire();
+            TryReload();
+            TryFineSightMode();
+        }
     }
 
 
@@ -68,13 +86,27 @@ public class GunController : MonoBehaviour
 
     private void Shoot() //발사 후 계산
     {
+        theCrossHair.FireAnimation();
         currentGun.currentBulletCount--;
         currentFireRate = currentGun.fireRate; //연사 속도 재계산
         PlaySE(currentGun.fire_sound);
         currentGun.muzzleFlash.Play();
-
+        Hit();
         StopAllCoroutines();
         StartCoroutine("RetroActionCoroutine"); //총기반동 코루틴 실행
+    }
+
+    private void Hit()
+    {
+        if (Physics.Raycast(theCam.transform.position, theCam.transform.forward +
+                new Vector3(Random.Range(-theCrossHair.GetAccuracy() - currentGun.accuracy, theCrossHair.GetAccuracy() + currentGun.accuracy),
+                            Random.Range(-theCrossHair.GetAccuracy() - currentGun.accuracy, theCrossHair.GetAccuracy() + currentGun.accuracy), 0), 
+                out hitInfo, currentGun.range))
+        {
+            GameObject clone = Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+            Destroy(clone, 1.5f);
+
+        }
     }
 
     private void TryReload() //재장전 시도
@@ -118,6 +150,15 @@ public class GunController : MonoBehaviour
         }
     }
 
+    public void CancelReload()
+    {
+        if(isReload)
+        {
+            StopAllCoroutines();
+            isReload = false;
+        }
+    }
+
     private void TryFineSightMode() //정조준 시도
     {
         if(Input.GetButtonDown("Fire2") && !isReload)
@@ -135,6 +176,7 @@ public class GunController : MonoBehaviour
     private void FineSight() //정조준 로직 시작
     {
         isFineSightMode = !isFineSightMode;
+        theCrossHair.FineSightAnimation(isFineSightMode);
         currentGun.anim.SetBool("FineSightMode", isFineSightMode);
 
         if(isFineSightMode)
@@ -211,15 +253,38 @@ public class GunController : MonoBehaviour
                 yield return null;
             }
         }
-
-
-
     }
 
     private void PlaySE(AudioClip _clip) //사운드 재생
     {
         audioSource.clip = _clip;
         audioSource.Play();
+    }
+
+    public Gun GetGun()
+    {
+        return currentGun;
+    }
+
+    public bool GetFineSightMode()
+    {
+        return isFineSightMode;
+    }
+
+    public void GunChange(Gun _gun)
+    {
+        if(WeaponManager.curretnWeapon != null)
+        {
+            WeaponManager.curretnWeapon.gameObject.SetActive(false);
+        }
+
+        currentGun = _gun;
+        WeaponManager.curretnWeapon = currentGun.GetComponent<Transform>();
+        WeaponManager.currentWeaponAnim = currentGun.anim;
+
+        currentGun.transform.localPosition = Vector3.zero;
+        currentGun.gameObject.SetActive(true);
+        isActivate = true;
     }
 
 }
