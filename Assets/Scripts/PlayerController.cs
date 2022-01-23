@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
     private CapsuleCollider capsuleCollider;
     private Rigidbody myRigid;
     private CrossHair theCrossHair;
-    
+    private StatusController theStatusController;
 
     
     void Start()
@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviour
         myRigid = GetComponent<Rigidbody>();
         theGunController = FindObjectOfType<GunController>();
         theCrossHair = FindObjectOfType<CrossHair>();
+        theStatusController = FindObjectOfType<StatusController>();
 
         applySpeed = walkSpeed;
         originPoxY = theCamera.transform.localPosition.y;
@@ -73,14 +74,18 @@ public class PlayerController : MonoBehaviour
         tryRun();
         tryCrouch();
         Move();
-        CameraRotation();
-        CharacterRotation();
+        if(!Inventory.inventoryActivated)
+        {
+            CameraRotation();
+            CharacterRotation();
+        }
     }
 
     private void FixedUpdate()
     {
         MoveCheck();
     }
+
 
 
     private void tryCrouch()
@@ -140,7 +145,7 @@ public class PlayerController : MonoBehaviour
 
     private void tryJump()
     {
-        if(Input.GetKeyDown(KeyCode.Space) && isGround)
+        if(Input.GetKeyDown(KeyCode.Space) && isGround && theStatusController.GetCurrentSP() > 0)
         {
             Jump();
         }
@@ -150,16 +155,17 @@ public class PlayerController : MonoBehaviour
     {
         if (isCrouch)
             Crouch();
+        theStatusController.DecreaseStamina(100);
         myRigid.velocity = transform.up * jumpForce;
     }
 
     private void tryRun()
     {
-        if(Input.GetKey(KeyCode.LeftShift))
+        if(Input.GetKey(KeyCode.LeftShift) && theStatusController.GetCurrentSP() > 0)
         {
             Running();
         }
-        else if(Input.GetKeyUp(KeyCode.LeftShift))
+        else if(Input.GetKeyUp(KeyCode.LeftShift) || theStatusController.GetCurrentSP() <= 0)
         {
             RunningCancel();
         }
@@ -171,6 +177,7 @@ public class PlayerController : MonoBehaviour
             Crouch();
         isRun = true;
 
+        theStatusController.DecreaseStamina(1);
         theCrossHair.RunningAnimation(isRun);
         theGunController.CancelFineSight();
         applySpeed = runSpeed;

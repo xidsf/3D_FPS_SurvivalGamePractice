@@ -18,11 +18,14 @@ public abstract class CloseWeaponController : MonoBehaviour//미완성함수가 
 
     protected void TryAttack()
     {
-        if (Input.GetButton("Fire1"))
+        if(!Inventory.inventoryActivated)
         {
-            if (!isAttack)
+            if (Input.GetButton("Fire1"))
             {
-                StartCoroutine("AttackCoroutine");
+                if (!isAttack)
+                {
+                    StartCoroutine("AttackCoroutine");
+                }
             }
         }
     }

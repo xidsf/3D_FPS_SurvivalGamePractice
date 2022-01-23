@@ -68,7 +68,7 @@ public class WeaponManager : MonoBehaviour
             {
                 StartCoroutine(ChangeWeaponCoroutine("AXE", "Axe"));
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha4))//도끼
+            else if (Input.GetKeyDown(KeyCode.Alpha4))//곡괭이
             {
                 StartCoroutine(ChangeWeaponCoroutine("PICKAXE", "Pickaxe"));
             }
@@ -126,7 +126,7 @@ public class WeaponManager : MonoBehaviour
         }
         else if (_type == "PICKAXE")
         {
-            theAxeController.CloseWeaponChange(closeWeaponDictionary[_name]);
+            thePickaxeController.CloseWeaponChange(closeWeaponDictionary[_name]);
         }
     }
 
