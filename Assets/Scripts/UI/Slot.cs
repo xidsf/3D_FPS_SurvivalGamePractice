@@ -5,10 +5,8 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 
-public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    
-
     public Item item; //획득한 아이템
     public int itemCount; //아이템 갯수
     public Image itemImage; //인벤 안에서 나올 스프라이트
@@ -18,7 +16,6 @@ public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
     private TextMeshProUGUI Text_Count; //아이템 갯수 표시 텍스트
     [SerializeField]
     private GameObject go_CountImage; //아이템 갯수 표시 텍스트 오브젝트
-    
     private ItemEffectDatabase theItemEffectDatabase;
 
     private void Start()
@@ -137,5 +134,18 @@ public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDra
             DragSlot.instance.dragSlot.ClearSlot();
         }
 
+    }
+
+    public void OnPointerEnter(PointerEventData eventData) //마우스가 슬롯에 들어갈 때 호출
+    {
+        if(item != null)
+        {
+            theItemEffectDatabase.ShowToolTip(item, transform.position);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)//마우스가 슬롯에 나갈 때 호출
+    {
+        theItemEffectDatabase.HideToolTip();
     }
 }

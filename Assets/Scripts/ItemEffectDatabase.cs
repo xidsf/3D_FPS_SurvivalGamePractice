@@ -22,10 +22,20 @@ public class ItemEffectDatabase : MonoBehaviour
     private StatusController thePlayerStatus;
     [SerializeField]
     private WeaponManager theWeaponManager;
-
+    [SerializeField]
+    private SlotToolTip theSlotToopTip;
 
     private const string HP = "HP", DP = "DP", SP = "SP", HUNGRY = "HUNGRY", THIRSTY = "THIRSTY", SATISFY = "SATISFY";
 
+    public void ShowToolTip(Item _item, Vector3 _pos)
+    {
+        theSlotToopTip.ShowToolTip(_item, _pos);
+    }
+
+    public void HideToolTip()
+    {
+        theSlotToopTip.HideToolTip();
+    }
 
     public void UsedItem(Item _item)
     {
