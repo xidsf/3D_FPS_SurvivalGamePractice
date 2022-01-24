@@ -12,6 +12,9 @@ public abstract class CloseWeaponController : MonoBehaviour//미완성함수가 
     protected bool isSwing = false;
 
     protected RaycastHit hitInfo;
+    [SerializeField]
+    protected LayerMask layerMask;
+
 
     //추상 클래스는 컴포넌트로 객체에 넣을 수 없기 때문에update함수가 작동하지 않는다.
     
@@ -50,7 +53,7 @@ public abstract class CloseWeaponController : MonoBehaviour//미완성함수가 
 
     protected bool CheckObject()
     {
-        if (Physics.Raycast(transform.position, transform.forward, out hitInfo, currentCloseWeapon.range))
+        if (Physics.Raycast(transform.position, transform.forward, out hitInfo, currentCloseWeapon.range, layerMask))
         {
             return true;
         }

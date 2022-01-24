@@ -12,6 +12,8 @@ public class GunController : MonoBehaviour
     private float currentFireRate;//연사속도
 
     private RaycastHit hitInfo;//hit한 raycast정보
+    [SerializeField]
+    private LayerMask layerMask;
 
     //상태 변수
     private bool isReload = false;
@@ -104,7 +106,7 @@ public class GunController : MonoBehaviour
         if (Physics.Raycast(theCam.transform.position, theCam.transform.forward +
                 new Vector3(Random.Range(-theCrossHair.GetAccuracy() - currentGun.accuracy, theCrossHair.GetAccuracy() + currentGun.accuracy),
                             Random.Range(-theCrossHair.GetAccuracy() - currentGun.accuracy, theCrossHair.GetAccuracy() + currentGun.accuracy), 0), 
-                out hitInfo, currentGun.range))
+                out hitInfo, currentGun.range, layerMask))
         {
             GameObject clone = Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
             Destroy(clone, 1.5f);
